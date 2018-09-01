@@ -3,7 +3,7 @@
 SCRIPTFOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 DOCKER_MAVEN_JAVA=maven:3-jdk-8
-DOCKER_XA65=assembler-xa65
+DOCKER_XA65=oliverpavey/assembler-xa65:latest
 
 # Create local volume for maven cache
 if [ 0 -eq $(docker volume ls | grep maven-repo | wc -l) ]; then
@@ -28,7 +28,7 @@ EOM
     docker run --rm \
         --volume maven-repo:/root/.m2 \
         --volume diskmaker-dfs:/diskmaker-dfs \
-        maven:3-jdk-8 \
+        $DOCKER_MAVEN_JAVA \
         bash -c "$BUILD_DISKMAKER_DFS"
 fi
 
@@ -38,6 +38,9 @@ cd /project/src
 xa -M -o /project/out/hello hello.a65
 EOM
 
+# Ensure the output folder exists
+mkdir -p $SCRIPTFOLDER/out
+
 # Delete the expected outputs so we can tell if the assembly and disk build succeed
 rm -f $SCRIPTFOLDER/out/hello > /dev/null
 rm -f $SCRIPTFOLDER/out/helloWorld.ssd > /dev/null
@@ -46,7 +49,7 @@ rm -f $SCRIPTFOLDER/out/helloWorld.ssd > /dev/null
 docker run --rm \
     --volume diskmaker-dfs:/diskmaker-dfs \
     --volume $SCRIPTFOLDER:/project \
-    oliverpavey/assembler-xa65:latest \
+    $DOCKER_XA65 \
     bash -c "$ASSEMBLE_CODE"
 
 if [ ! -e $SCRIPTFOLDER/out/hello ]; then
@@ -57,7 +60,7 @@ else
     docker run --rm \
         --volume diskmaker-dfs:/diskmaker-dfs \
         --volume $SCRIPTFOLDER:/project \
-        maven:3-jdk-8 \
+        $DOCKER_MAVEN_JAVA \
         java -jar /diskmaker-dfs/diskmaker-dfs.jar /project/disk/disk.xml
 fi
 
@@ -68,6 +71,6 @@ else
     if [ ! -z "$BEEBEM_HOME" ]; then
         # Launch BeebEm with the new auto-bootable disk
         BEEBEM_EXE=$(echo $BEEBEM_HOME\\BeebEm.exe | sed s/\\\\/\\//g | sed s/C:/\\/c/g)
-        $BEEBEM_EXE $SCRIPTFOLDER/out/helloWorld.ssd
+        $BEEBEM_EXE $SCRIPTFOLDER/out/helloWorld.ssd &
     fi
 fi
