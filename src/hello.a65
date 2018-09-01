@@ -1,0 +1,17 @@
+#define OSWRCH $FFE3
+
+        .(
+        *=$2000
+
+        ldx #$FF
+More
+        inx
+        lda Message,x
+        cmp #0 : beq Done
+        jsr OSWRCH
+        jmp More
+Done
+        rts
+Message
+        .asc "Hello World!", 13, 0
+        .)

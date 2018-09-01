@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<disk>
+	<image>../out/helloWorld.ssd</image>
+	<label>HelloWorld</label>
+	<boot-opt>3</boot-opt>
+	<files>
+		<file>
+			<name>!BOOT</name>
+			<source>boot.txt</source>
+			<loadAddress>0</loadAddress>
+			<execAddress>0</execAddress>
+		</file>
+		<file>
+			<name>X.HELLO</name>
+			<source>../out/hello</source>
+			<loadAddress>2000</loadAddress>
+			<execAddress>2000</execAddress>
+		</file>
+	</files>
+</disk>
